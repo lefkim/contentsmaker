@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>CONTENIDO MAQUINA</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --bg:#FFFFFF; --surface:#FAFAFA; --border:#E8E8E8; --border-dark:#C8C8C8;
+    --text:#111111; --muted:#888888; --faint:#DDDDDD; --accent:#1A5C3A;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'IBM Plex Mono',monospace;background:var(--bg);color:var(--text);font-size:13px;min-height:100vh}
+
+  .header{max-width:760px;margin:0 auto;padding:2.5rem 2rem 0}
+  .logo{font-family:'Bebas Neue',sans-serif;font-size:2.6rem;letter-spacing:4px;line-height:1}
+  .logo-sub{font-size:9px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:1.75rem}
+
+  .brand-bar{display:flex;gap:6px;align-items:center;margin-bottom:1.5rem;flex-wrap:wrap}
+  .brand-chip{padding:5px 14px;border:1px solid var(--border);border-radius:99px;font-size:11px;color:var(--muted);background:transparent;cursor:pointer;font-family:'IBM Plex Mono',monospace;transition:all .1s}
+  .brand-chip.active{background:var(--text);color:var(--bg);border-color:var(--text)}
+  .brand-add{padding:5px 12px;border:1px dashed var(--border-dark);border-radius:99px;font-size:11px;color:var(--muted);background:transparent;cursor:pointer;font-family:'IBM Plex Mono',monospace}
+  .brand-add:hover{color:var(--text);border-color:var(--text)}
+
+  .tabs{display:flex;gap:1.5rem;border-bottom:1px solid var(--border);max-width:760px;margin:0 auto;padding:0 2rem}
+  .tab{padding:0 0 10px;font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);background:none;border:none;border-bottom:1.5px solid transparent;cursor:pointer;letter-spacing:1px;text-transform:uppercase;margin-bottom:-1px;transition:all .1s}
+  .tab.active{color:var(--text);border-bottom-color:var(--text)}
+
+  main{max-width:760px;margin:0 auto;padding:1.5rem 2rem 5rem}
+  .view{display:none}
+  .view.active{display:block}
+
+  .card{background:var(--bg);border:1px solid var(--border);border-radius:2px;padding:1.25rem;margin-bottom:10px}
+  .label{font-size:9px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px}
+  .hint{font-size:10px;color:var(--muted);margin-bottom:10px;line-height:1.6}
+
+  input[type=text],input[type=password],textarea,select{
+    width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:2px;
+    font-family:'IBM Plex Mono',monospace;font-size:13px;background:var(--surface);color:var(--text);
+    outline:none;transition:border-color .1s;margin-bottom:10px}
+  input:focus,textarea:focus,select:focus{border-color:var(--border-dark);background:var(--bg)}
+  input::placeholder,textarea::placeholder{color:var(--faint)}
+  textarea{resize:vertical;min-height:80px;line-height:1.6}
+
+  .opt-row{display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap}
+  .opt{padding:7px 14px;border:1px solid var(--border);border-radius:2px;font-size:11px;color:var(--muted);background:transparent;cursor:pointer;font-family:'IBM Plex Mono',monospace;transition:all .1s;flex:1;text-align:center;min-width:80px}
+  .opt.active{background:var(--text);color:var(--bg);border-color:var(--text)}
+
+  .btn{width:100%;padding:12px;border-radius:2px;font-family:'IBM Plex Mono',monospace;font-size:11px;cursor:pointer;letter-spacing:1.5px;text-transform:uppercase;transition:all .1s;margin-bottom:6px}
+  .btn-dark{background:var(--text);color:var(--bg);border:1px solid var(--text);font-weight:500}
+  .btn-dark:hover{opacity:.8}
+  .btn-dark:disabled{opacity:.35;cursor:not-allowed}
+  .btn-line{background:transparent;color:var(--muted);border:1px solid var(--border)}
+  .btn-line:hover{border-color:var(--text);color:var(--text)}
+
+  details{margin-bottom:12px;border:1px solid var(--border);border-radius:2px;padding:10px 12px}
+  summary{font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;cursor:pointer;outline:none}
+  details[open] summary{margin-bottom:10px}
+
+  .kb-pick{display:flex;flex-direction:column;gap:4px;max-height:180px;overflow-y:auto;margin-bottom:8px}
+  .kb-item{display:flex;align-items:flex-start;gap:8px;padding:7px 10px;border:1px solid var(--border);border-radius:2px;font-size:12px;cursor:pointer}
+  .kb-item input{width:12px;height:12px;margin:2px 0 0;accent-color:var(--text);flex-shrink:0}
+
+  /* 결과 */
+  .result{border:1px solid var(--border);border-radius:2px;padding:1.5rem;background:var(--surface);margin-bottom:10px;white-space:pre-wrap;line-height:1.85;font-size:14px}
+  .result-title{font-size:1.15rem;font-weight:500;margin-bottom:14px;line-height:1.5}
+  .result-actions{display:flex;gap:6px}
+  .result-actions .btn{margin-bottom:0}
+
+  .loading{text-align:center;padding:3rem 0;font-size:11px;color:var(--muted);letter-spacing:2px;text-transform:uppercase}
+
+  /* 목록 */
+  .list-item{border:1px solid var(--border);border-radius:2px;padding:12px 14px;margin-bottom:6px}
+  .list-head{display:flex;justify-content:space-between;align-items:center;gap:10px;cursor:pointer}
+  .list-title{flex:1;font-size:13px;font-weight:500;line-height:1.5}
+  .list-meta{font-size:10px;color:var(--muted);white-space:nowrap}
+  .list-body{display:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--border);white-space:pre-wrap;line-height:1.8;font-size:13px;color:var(--text)}
+  .list-body.open{display:block}
+  .mini{font-size:10px;color:var(--faint);background:none;border:none;cursor:pointer;font-family:'IBM Plex Mono',monospace;letter-spacing:.5px;text-transform:uppercase;padding:0}
+  .mini:hover{color:var(--text)}
+  .mini-row{display:flex;gap:12px;margin-top:10px}
+
+  .empty{font-size:10px;color:var(--muted);text-align:center;padding:2.5rem 0;letter-spacing:1px}
+
+  /* 모달 */
+  .overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:999;display:none;align-items:center;justify-content:center;padding:1rem}
+  .overlay.show{display:flex}
+  .modal{background:var(--bg);border:1px solid var(--border);border-radius:2px;padding:1.5rem;width:100%;max-width:420px;max-height:85vh;overflow-y:auto}
+  .modal-title{font-size:11px;letter-spacing:1px;text-transform:uppercase;margin-bottom:14px}
+  .modal-btns{display:flex;gap:6px;margin-top:4px}
+  .modal-btns .btn{margin-bottom:0}
+
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--text);color:var(--bg);padding:10px 20px;border-radius:2px;font-size:11px;letter-spacing:1px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:1000}
+  .toast.show{opacity:1}
+
+  @media(max-width:520px){
+    .header,main,.tabs{padding-left:1rem;padding-right:1rem}
+    .logo{font-size:2rem}
+    .opt{min-width:calc(50% - 2px)}
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">CONTENIDO MAQUINA</div>
+  <div class="logo-sub">content engine</div>
+  <div class="brand-bar" id="brand-bar"></div>
+</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="switchView('write',this)">write</button>
+  <button class="tab" onclick="switchView('saved',this)">saved</button>
+  <button class="tab" onclick="switchView('kb',this)">knowledge</button>
+  <button class="tab" onclick="switchView('setting',this)">brand</button>
+</div>
+
+<main>
+
+<!-- WRITE -->
+<div class="view active" id="view-write">
+  <div class="card">
+    <div class="label">콘텐츠 유형</div>
+    <div class="opt-row" id="type-row"></div>
+
+    <div class="label">타겟</div>
+    <div class="opt-row" id="target-row"></div>
+
+    <div class="label">키워드</div>
+    <input type="text" id="kw" placeholder="바닐라빈, 바닐라빈 라떼, 단골" />
+    <div class="hint">쉼표로 구분 · 1~3개면 짧게, 4개 이상이면 길게 나옵니다</div>
+
+    <details>
+      <summary>+ 참고자료 (선택)</summary>
+      <div class="label" style="margin-top:4px">지식베이스에서 선택</div>
+      <div class="kb-pick" id="kb-pick"><div class="empty">—</div></div>
+      <div class="label">또는 직접 붙여넣기</div>
+      <textarea id="ref-text" placeholder="이번 글에만 쓸 자료를 붙여넣으세요"></textarea>
+    </details>
+
+    <button class="btn btn-dark" id="gen-btn" onclick="generate()">글 만들기</button>
+  </div>
+
+  <div id="out"></div>
+</div>
+
+<!-- SAVED -->
+<div class="view" id="view-saved">
+  <div id="saved-list"><div class="empty">—</div></div>
+</div>
+
+<!-- KNOWLEDGE -->
+<div class="view" id="view-kb">
+  <div class="card">
+    <div class="label">지식 항목 추가</div>
+    <input type="text" id="kb-title" placeholder="바닐라 산지별 특징" />
+    <textarea id="kb-body" placeholder="내용을 붙여넣으세요" style="min-height:140px"></textarea>
+    <button class="btn btn-dark" onclick="addKB()">+ add</button>
+  </div>
+  <div id="kb-list"><div class="empty">—</div></div>
+</div>
+
+<!-- BRAND SETTING -->
+<div class="view" id="view-setting">
+  <div class="card">
+    <div class="label">브랜드 이름</div>
+    <input type="text" id="b-name" placeholder="아유타 커피랩" />
+    <div class="label">브랜드 소개</div>
+    <textarea id="b-desc" placeholder="인도네시아 생두 수입 및 원두 판매. 동부 자바 포노로고 바닐라빈 취급. 산지와 직접 거래."></textarea>
+    <div class="label">글 톤</div>
+    <textarea id="b-tone" style="min-height:120px"></textarea>
+    <div class="label">콘텐츠 유형 (쉼표 구분)</div>
+    <input type="text" id="b-types" placeholder="산지·원료, 제품 소개, 활용법, 브랜드 일상" />
+    <div class="label">타겟 (쉼표 구분)</div>
+    <input type="text" id="b-targets" placeholder="카페 사장님, 홈카페" />
+    <button class="btn btn-dark" onclick="saveBrand()">저장</button>
+    <button class="btn btn-line" onclick="deleteBrand()">이 브랜드 삭제</button>
+  </div>
+
+  <div class="card">
+    <div class="label">API KEY</div>
+    <input type="password" id="api-key" placeholder="sk-ant-..." />
+    <div class="hint">Anthropic API 키. 한 번 저장하면 팀원 모두 사용합니다.</div>
+    <button class="btn btn-line" onclick="saveKey()">키 저장</button>
+  </div>
+</div>
+
+</main>
+
+<!-- 브랜드 추가 모달 -->
+<div class="overlay" id="brand-modal">
+  <div class="modal">
+    <div class="modal-title">새 브랜드</div>
+    <input type="text" id="new-brand-name" placeholder="브랜드 이름" />
+    <div class="modal-btns">
+      <button class="btn btn-line" onclick="closeBrandModal()">cancel</button>
+      <button class="btn btn-dark" onclick="createBrand()">create</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, push, set, onValue, remove, update } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDGR_H5irToWUMDmjpvgBxJCXHYmg5PUp8",
+  authDomain: "lef-hikidashi.firebaseapp.com",
+  databaseURL: "https://lef-hikidashi-default-rtdb.firebaseio.com",
+  projectId: "lef-hikidashi",
+  storageBucket: "lef-hikidashi.firebasestorage.app",
+  messagingSenderId: "126400912407",
+  appId: "1:126400912407:web:279886a9764897f2ad9052"
+};
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+const DEFAULT_TONE = `- 존댓말. "~습니다"와 "~해요"를 자연스럽게 섞는다.
+- 인사말 없이 바로 본론으로 들어간다.
+- "~에 대해 알아보겠습니다" 같은 전환 문구를 쓰지 않는다.
+- 매끄럽게 정리하지 말 것. 구어체로, 말하듯이 쓴다.
+- 구체적인 관찰을 최소 하나 넣는다. (예: 진공팩 너머로도 향이 날 정도)
+- 단정적인 결론 대신 "~인 것 같아요", "~하더라고요" 같은 표현을 쓴다.
+- 문장이 조금 삐뚤어도 괜찮다. AI처럼 완벽하면 안 된다.
+- 마지막은 문의 유도나 다음 콘텐츠 예고로 자연스럽게 마무리. 이모지 하나 정도.`;
+
+const state = {
+  brands: {}, currentBrand: null, kb: {}, saved: {},
+  type: null, target: null, apiKey: '', lastResult: null
+};
+
+/* ---------- Firebase sync ---------- */
+onValue(ref(db, 'maquina/brands'), snap=>{
+  state.brands = {};
+  snap.forEach(c=>{ state.brands[c.key] = {id:c.key, ...c.val()}; });
+  if(!state.currentBrand || !state.brands[state.currentBrand]){
+    const first = Object.keys(state.brands)[0];
+    state.currentBrand = first || null;
+  }
+  renderBrands(); renderOptions(); loadBrandForm(); syncBrandData();
+});
+
+onValue(ref(db,'maquina/apikey'), snap=>{
+  state.apiKey = snap.val() || '';
+  const el = document.getElementById('api-key');
+  if(state.apiKey && !el.value) el.placeholder = '••••••••  (저장됨)';
+});
+
+let kbUnsub=null, savedUnsub=null;
+function syncBrandData(){
+  if(!state.currentBrand) return;
+  onValue(ref(db,'maquina/kb/'+state.currentBrand), snap=>{
+    state.kb={}; snap.forEach(c=>{ state.kb[c.key]={id:c.key,...c.val()}; });
+    renderKB(); renderKBPick();
+  });
+  onValue(ref(db,'maquina/saved/'+state.currentBrand), snap=>{
+    state.saved={}; snap.forEach(c=>{ state.saved[c.key]={id:c.key,...c.val()}; });
+    renderSaved();
+  });
+}
+
+/* ---------- UI ---------- */
+window.switchView = (v,btn)=>{
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));
+  document.getElementById('view-'+v).classList.add('active');
+};
+
+function renderBrands(){
+  const bar = document.getElementById('brand-bar');
+  const list = Object.values(state.brands);
+  bar.innerHTML = list.map(b=>
+    `<button class="brand-chip ${b.id===state.currentBrand?'active':''}" onclick="pickBrand('${b.id}')">${b.name}</button>`
+  ).join('') + `<button class="brand-add" onclick="openBrandModal()">+ 브랜드</button>`;
+}
+
+window.pickBrand = id=>{
+  state.currentBrand=id; state.type=null; state.target=null;
+  renderBrands(); renderOptions(); loadBrandForm(); syncBrandData();
+};
+
+function renderOptions(){
+  const b = state.brands[state.currentBrand];
+  const types = b?.types ? b.types.split(',').map(s=>s.trim()).filter(Boolean) : [];
+  const targets = b?.targets ? b.targets.split(',').map(s=>s.trim()).filter(Boolean) : [];
+  if(!state.type && types.length) state.type = types[0];
+  if(!state.target && targets.length) state.target = targets[0];
+  document.getElementById('type-row').innerHTML = types.length
+    ? types.map(t=>`<button class="opt ${state.type===t?'active':''}" onclick="setType('${t}')">${t}</button>`).join('')
+    : '<div class="hint">brand 탭에서 콘텐츠 유형을 설정하세요</div>';
+  document.getElementById('target-row').innerHTML = targets.length
+    ? targets.map(t=>`<button class="opt ${state.target===t?'active':''}" onclick="setTarget('${t}')">${t}</button>`).join('')
+    : '<div class="hint">brand 탭에서 타겟을 설정하세요</div>';
+}
+window.setType = t=>{state.type=t;renderOptions()};
+window.setTarget = t=>{state.target=t;renderOptions()};
+
+/* ---------- brand crud ---------- */
+window.openBrandModal = ()=>{document.getElementById('brand-modal').classList.add('show');document.getElementById('new-brand-name').focus()};
+window.closeBrandModal = ()=>document.getElementById('brand-modal').classList.remove('show');
+window.createBrand = ()=>{
+  const name = document.getElementById('new-brand-name').value.trim();
+  if(!name) return;
+  const r = push(ref(db,'maquina/brands'));
+  set(r,{name,desc:'',tone:DEFAULT_TONE,types:'산지·원료, 제품 소개, 활용법, 브랜드 일상',targets:'일반'});
+  state.currentBrand = r.key;
+  document.getElementById('new-brand-name').value='';
+  closeBrandModal(); toast('브랜드 생성됨');
+};
+
+function loadBrandForm(){
+  const b = state.brands[state.currentBrand];
+  document.getElementById('b-name').value = b?.name||'';
+  document.getElementById('b-desc').value = b?.desc||'';
+  document.getElementById('b-tone').value = b?.tone||DEFAULT_TONE;
+  document.getElementById('b-types').value = b?.types||'';
+  document.getElementById('b-targets').value = b?.targets||'';
+}
+
+window.saveBrand = ()=>{
+  if(!state.currentBrand) return toast('브랜드를 먼저 만드세요');
+  update(ref(db,'maquina/brands/'+state.currentBrand),{
+    name:document.getElementById('b-name').value.trim(),
+    desc:document.getElementById('b-desc').value.trim(),
+    tone:document.getElementById('b-tone').value.trim(),
+    types:document.getElementById('b-types').value.trim(),
+    targets:document.getElementById('b-targets').value.trim(
+  });
+  state.type=null;state.target=null;
+  toast('저장됨');
+};
+
+window.deleteBrand = ()=>{
+  if(!state.currentBrand) return;
+  if(!confirm('이 브랜드와 지식베이스, 저장글이 모두 삭제됩니다.')) return;
+  remove(ref(db,'maquina/brands/'+state.currentBrand));
+  remove(ref(db,'maquina/kb/'+state.currentBrand));
+  remove(ref(db,'maquina/saved/'+state.currentBrand));
+  state.currentBrand=null; toast('삭제됨');
+};
+
+window.saveKey = ()=>{
+  const k = document.getElementById('api-key').value.trim();
+  if(!k) return;
+  set(ref(db,'maquina/apikey'),k);
+  document.getElementById('api-key').value='';
+  toast('API 키 저장됨');
+};
+
+/* ---------- knowledge ---------- */
+window.addKB = ()=>{
+  if(!state.currentBrand) return toast('브랜드를 먼저 선택하세요');
+  const t=document.getElementById('kb-title').value.trim();
+  const b=document.getElementById('kb-body').value.trim();
+  if(!t||!b) return;
+  push(ref(db,'maquina/kb/'+state.currentBrand),{title:t,body:b});
+  document.getElementById('kb-title').value='';
+  document.getElementById('kb-body').value='';
+  toast('추가됨');
+};
+
+function renderKB(){
+  const el=document.getElementById('kb-list');
+  const list=Object.values(state.kb);
+  if(!list.length){el.innerHTML='<div class="empty">—</div>';return}
+  el.innerHTML=list.map(k=>`
+    <div class="list-item">
+      <div class="list-head" onclick="toggleBody('kb-${k.id}')">
+        <div class="list-title">${esc(k.title)}</div>
+        <div class="list-meta">${k.body.length}자</div>
+      </div>
+      <div class="list-body" id="kb-${k.id}">${esc(k.body)}
+        <div class="mini-row"><button class="mini" onclick="delKB('${k.id}')">삭제</button></div>
+      </div>
+    </div>`).join('');
+}
+window.delKB = id=>{ if(confirm('삭제할까요?')) remove(ref(db,'maquina/kb/'+state.currentBrand+'/'+id)); };
+
+function renderKBPick(){
+  const el=document.getElementById('kb-pick');
+  const list=Object.values(state.kb);
+  if(!list.length){el.innerHTML='<div class="empty">지식베이스 없음</div>';return}
+  el.innerHTML=list.map(k=>
+    `<label class="kb-item"><input type="checkbox" value="${k.id}" /><span>${esc(k.title)}</span></label>`
+  ).join('');
+}
+
+/* ---------- generate ---------- */
+window.generate = async ()=>{
+  const b = state.brands[state.currentBrand];
+  if(!b) return toast('브랜드를 먼저 만드세요');
+  if(!state.apiKey) return toast('brand 탭에서 API 키를 저장하세요');
+  const kw = document.getElementById('kw').value.trim();
+  if(!kw) return toast('키워드를 입력하세요');
+
+  const picked = [...document.querySelectorAll('#kb-pick input:checked')].map(i=>state.kb[i.value]);
+  const extra = document.getElementById('ref-text').value.trim();
+  let refBlock='';
+  if(picked.length) refBlock += picked.map(k=>`【${k.title}】\n${k.body}`).join('\n\n');
+  if(extra) refBlock += (refBlock?'\n\n':'') + `【추가 자료】\n${extra}`;
+
+  const kwCount = kw.split(',').filter(s=>s.trim()).length;
+  const lengthGuide = kwCount<=3
+    ? '본문 300~400자. 짧고 집중되게. 단락 2~3개.'
+    : '본문 600~800자. 단락 3~4개.';
+
+  const prompt = `너는 브랜드 블로그 글을 쓰는 사람이다. AI가 아니라 실제로 그 가게를 운영하는 사람처럼 쓴다.
+
+【브랜드】
+${b.name}
+${b.desc||''}
+
+【글 톤 — 반드시 지킬 것】
+${b.tone||DEFAULT_TONE}
+
+【이번 글】
+- 콘텐츠 유형: ${state.type||'일반'}
+- 타겟 독자: ${state.target||'일반'}
+- 키워드: ${kw}
+- ${lengthGuide}
+
+${refBlock ? `【참고자료 — 이 정보를 사실 근거로 사용할 것】\n${refBlock}\n` : '【참고자료 없음 — 일반 지식으로 작성하되, 확실하지 않은 수치나 고유명사는 단정하지 말 것】\n'}
+
+【구조】
+1. 제목 — 키워드가 들어가되 클릭하고 싶게. 검색도 되고 읽고도 싶은 제목.
+2. 도입 — 인사 없이 바로 시작. 2~3줄.
+3. 본문
+4. 마무리 — 한두 줄. 문의 유도나 다음 글 예고. 이모지 하나 정도.
+
+【판매】
+직접적인 광고 문구는 쓰지 않는다. 대신 실제 경험이나 사례처럼 자연스럽게 제품을 녹인다. 마지막에 문의를 유도하되 부담스럽지 않게.
+
+【출력 형식】
+첫 줄에 제목만 쓰고, 빈 줄 하나 두고 본문을 쓴다. 마크다운 기호(#, **, - 등)를 쓰지 않는다. 다른 설명은 붙이지 않는다.`;
+
+  const btn=document.getElementById('gen-btn');
+  const out=document.getElementById('out');
+  btn.disabled=true; btn.textContent='쓰는 중...';
+  out.innerHTML='<div class="loading">글 쓰는 중...</div>';
+
+  try{
+    const res = await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'x-api-key':state.apiKey,
+        'anthropic-version':'2023-06-01',
+        'anthropic-dangerous-direct-browser-access':'true'
+      },
+      body:JSON.stringify({
+        model:'claude-haiku-4-5-20251001',
+        max_tokens:2000,
+        messages:[{role:'user',content:prompt}]
+      })
+    });
+    const data = await res.json();
+    if(!res.ok || data.error){
+      throw new Error('['+res.status+'] '+(data.error?.message || data.error?.type || JSON.stringify(data).slice(0,300)));
+    }
+    if(!data.content) throw new Error('응답 형식 이상: '+JSON.stringify(data).slice(0,300));
+    const text = data.content.map(c=>c.text||'').join('').trim();
+    const lines = text.split('\n');
+    const title = lines[0].trim();
+    const body = lines.slice(1).join('\n').trim();
+    state.lastResult = {title, body, kw, type:state.type, target:state.target};
+    out.innerHTML = `
+      <div class="result"><div class="result-title">${esc(title)}</div>${esc(body)}</div>
+      <div class="result-actions">
+        <button class="btn btn-line" onclick="copyResult()">복사</button>
+        <button class="btn btn-line" onclick="generate()">다시</button>
+        <button class="btn btn-dark" onclick="saveResult()">저장</button>
+      </div>`;
+  }catch(e){
+    out.innerHTML=`<div class="card" style="color:var(--muted);font-size:12px;line-height:1.7">오류가 났어요.<br>${esc(e.message)}<br><br>API 키가 맞는지, 크레딧이 남아있는지 확인해보세요.</div>`;
+  }
+  btn.disabled=false; btn.textContent='글 만들기';
+};
+
+window.copyResult = ()=>{
+  const r=state.lastResult; if(!r)return;
+  navigator.clipboard.writeText(r.title+'\n\n'+r.body);
+  toast('복사됨');
+};
+
+window.saveResult = ()=>{
+  const r=state.lastResult; if(!r)return;
+  push(ref(db,'maquina/saved/'+state.currentBrand),{
+    ...r, date:new Date().toLocaleDateString('ko-KR')
+  });
+  toast('저장됨');
+};
+
+function renderSaved(){
+  const el=document.getElementById('saved-list');
+  const list=Object.values(state.saved).reverse();
+  if(!list.length){el.innerHTML='<div class="empty">—</div>';return}
+  el.innerHTML=list.map(s=>`
+    <div class="list-item">
+      <div class="list-head" onclick="toggleBody('sv-${s.id}')">
+        <div class="list-title">${esc(s.title)}</div>
+        <div class="list-meta">${s.date||''}</div>
+      </div>
+      <div class="list-body" id="sv-${s.id}">${esc(s.body)}
+        <div class="mini-row">
+          <button class="mini" onclick="copySaved('${s.id}')">복사</button>
+          <button class="mini" onclick="delSaved('${s.id}')">삭제</button>
+        </div>
+      </div>
+    </div>`).join('');
+}
+window.copySaved = id=>{const s=state.saved[id];if(!s)return;navigator.clipboard.writeText(s.title+'\n\n'+s.body);toast('복사됨')};
+window.delSaved = id=>{ if(confirm('삭제할까요?')) remove(ref(db,'maquina/saved/'+state.currentBrand+'/'+id)); };
+
+window.toggleBody = id=>document.getElementById(id)?.classList.toggle('open');
+
+/* ---------- util ---------- */
+function esc(s){return (s||'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))}
+let toastTimer=null;
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),1800);
+}
+document.getElementById('new-brand-name').addEventListener('keydown',e=>{if(e.key==='Enter')createBrand()});
+document.getElementById('kw').addEventListener('keydown',e=>{if(e.key==='Enter')generate()});
+</script>
+</body>
+</html>
